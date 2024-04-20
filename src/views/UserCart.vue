@@ -74,10 +74,10 @@
                   </div>
                 </td>
                 <td>
-                  <div class="input-group input-group-sm">
-                    <label for="quantityInput" class="d-flex">
-                    <input type="number" id="quantityInput" class="form-control"
-                          v-model.number="item.qty">
+                  <div class="input-group input-group-sm d-grid">
+                    <label for="quantityInput" class="d-flex align-items-center">
+                    <input type="number" id="quantityInput" class="form-control col-auto"
+                        v-model.number="item.qty">
                       <div class="input-group-text">/ {{ item.product.unit }}</div>
                     </label>
                   </div>
