@@ -77,7 +77,8 @@
                   <div class="input-group input-group-sm d-grid">
                     <label for="quantityInput" class="d-flex align-items-center">
                     <input type="number" id="quantityInput" class="form-control col-auto"
-                        v-model.number="item.qty">
+                        min="1" :disabled="item.id === status.loadingItem"
+                        @change="updateCart(item)" v-model.number="item.qty">
                       <div class="input-group-text">/ {{ item.product.unit }}</div>
                     </label>
                   </div>
@@ -160,6 +161,20 @@ export default {
         console.log(response);
         this.cart = response.data.data;
         this.isLoading = false;
+      });
+    },
+    updateCart(item) {
+      const url = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/cart/${item.id}`;
+      this.isLoading = true;
+      this.status.loadingItem = item.id;
+      const cart = {
+        product_id: item.product_id,
+        qty: item.qty,
+      };
+      this.$http.put(url, { data: cart }).then((res) => {
+        console.log(res);
+        this.status.loadingItem = '';
+        this.getCart();
       });
     },
   },
