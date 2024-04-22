@@ -1,5 +1,5 @@
 <template>
-  <Loading :active="isLoading"></Loading>
+  <LoadingView :active="isLoading"></LoadingView>
   <div class="container">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
