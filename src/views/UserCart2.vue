@@ -1,3 +1,5 @@
+<!-- eslint-disable no-undef -->
+<!-- eslint-disable no-undef -->
 <template>
   <LoadingView :active="isLoading"></LoadingView>
   <div class="container">
@@ -71,7 +73,7 @@
               </tr>
             </thead>
             <tbody>
-              <template v-if="cart.carts">
+              <template v-if="cart && cart.carts">
                 <tr v-for="item in cart.carts" :key="item.id">
                   <td>
                     <button
@@ -224,6 +226,8 @@
 </template>
 
 <script>
+import api from '../methods/api';
+
 export default {
   data() {
     return {
@@ -241,91 +245,113 @@ export default {
         },
         message: '',
       },
-      cart: {},
+      cart: {
+        carts: [],
+        total: 0, // 初始化为一个空数组
+      },
       coupon_code: '',
     };
   },
   methods: {
-    getProducts() {
-      const url = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/products/all`;
-      this.isLoading = true;
-      this.$http.get(url).then((response) => {
-        this.products = response.data.products;
-        console.log('products:', response);
+    async getProducts() {
+      const url = `api/${process.env.VUE_APP_PATH}/products/all`;
+      try {
+        this.isLoading = true;
+        const response = await api.get(url);
+        this.products = response.products;
+      } catch (error) {
+        console.error('Error getting products:', error);
+      } finally {
         this.isLoading = false;
-      });
+      }
     },
     getProduct(id) {
       this.$router.push(`/user/product/${id}`);
     },
-    addCart(id) {
-      const url = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/cart`;
-      this.status.loadingItem = id;
-      const cart = { product_id: id, qty: 1 };
-      this.$http.post(url, { data: cart }).then((res) => {
+    async addCart(id) {
+      try {
+        const url = `api/${process.env.VUE_APP_PATH}/cart`;
+        this.status.loadingItem = id;
+        const cart = { product_id: id, qty: 1 };
+        await api.post(url, { data: cart });
         this.status.loadingItem = '';
-        console.log(res);
         this.getCart();
-      });
+      } catch (error) {
+        console.error('Error adding item to cart:', error);
+        this.status.loadingItem = '';
+      }
     },
-    getCart() {
-      const url = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/cart`;
-      this.isLoading = true;
-      this.$http.get(url).then((response) => {
-        console.log(response);
+    async getCart() {
+      try {
+        const url = `api/${process.env.VUE_APP_PATH}/cart`;
+        this.isLoading = true;
+        const response = await api.get(url);
         this.cart = response.data.data;
+      } catch (error) {
+        console.error('Error getting cart:', error);
+      } finally {
         this.isLoading = false;
-      });
+      }
     },
-    updateCart(item) {
-      const url = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/cart/${item.id}`;
-      this.isLoading = true;
-      this.status.loadingItem = item.id;
-      const cart = {
-        product_id: item.product_id,
-        qty: item.qty,
-      };
-      this.$http.put(url, { data: cart }).then((res) => {
-        console.log(res);
+    async updateCart(item) {
+      try {
+        const url = `api/${process.env.VUE_APP_PATH}/cart/${item.id}`;
+        this.isLoading = true;
+        this.status.loadingItem = item.id;
+        const cart = {
+          product_id: item.product_id,
+          qty: item.qty,
+        };
+        await api.put(url, { data: cart });
         this.status.loadingItem = '';
         this.getCart();
-      });
+      } catch (error) {
+        console.error('Error updating cart item:', error);
+        this.status.loadingItem = '';
+      } finally {
+        this.isLoading = false;
+      }
     },
-    removeCartItem(id) {
-      this.status.loadingItem = id;
-      const url = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/cart/${id}`;
-      this.isLoading = true;
-      this.$http.delete(url).then((response) => {
-        this.$httpMessageState(response, '移除購物車品項');
+    async removeCartItem(id) {
+      try {
+        const url = `api/${process.env.VUE_APP_PATH}/cart/${id}`;
+        this.status.loadingItem = id;
+        this.isLoading = true;
+        await api.delete(url);
         this.status.loadingItem = '';
         this.getCart();
+      } catch (error) {
+        console.error('Error removing cart item:', error);
+      } finally {
         this.isLoading = false;
-      });
+      }
     },
-    addCouponCode() {
-      const url = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/coupon`;
-      const coupon = {
-        code: this.coupon_code,
-      };
-      this.isLoading = true;
-      this.$http.post(url, { data: coupon }).then((response) => {
-        this.$httpMessageState(response, '加入優惠券');
+    async addCouponCode() {
+      try {
+        const url = `api/${process.env.VUE_APP_PATH}/coupon`;
+        const coupon = {
+          code: this.coupon_code,
+        };
+        this.isLoading = true;
+        await api.post(url, coupon);
         this.getCart();
+      } catch (error) {
+        console.error('Error adding coupon code:', error);
+      } finally {
         this.isLoading = false;
-      });
+      }
     },
-    createOrder() {
-      const url = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order`;
-      const order = this.form;
-      this.$http.post(url, { data: order })
-        .then((res) => {
-          console.log(res);
-          const { orderId } = res.data;
-          // this.$router.push(`/user/checkout/${orderId}`);
-          const checkoutRoute = { name: 'checkout', params: { orderId } };
-          // 导航到 checkout 路由
-          this.$router.push(checkoutRoute);
-        });
+    async createOrder() {
+      try {
+        const url = `api/${process.env.VUE_APP_PATH}/order`;
+        const order = this.form;
+        const response = await api.post(url, order);
+        const { orderId } = response.data;
+        const checkoutRoute = { name: 'checkout', params: { orderId } };
+        this.$router.push(checkoutRoute);
+      } catch (error) {
+        console.error('Error creating order:', error);
+      }
     },
   },
   created() {

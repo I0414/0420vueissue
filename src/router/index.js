@@ -32,9 +32,9 @@ const routes = [
     path: '/user',
     component: () => import('../views/UserBoard.vue'),
     children: [
-      { path: 'cart', component: () => import('../views/UserCart.vue') },
+      { path: 'cart', component: () => import('../views/UserCart2.vue') },
       { path: 'product/:productId', component: () => import('../views/UserProduct.vue') },
-      { path: 'checkout/:orderId', component: () => import('../views/UserCheckout.vue') },
+      { path: 'checkout/:orderId', component: () => import('../views/UserCheckout.vue'), name: 'checkout' },
     ],
   },
 ];
