@@ -20,3 +20,20 @@ export default function handleResponse(response, title = '更新', successCallba
     });
   }
 }
+
+// 方法二
+// export default function handleResponse(response, title = '更新', successCallback = null) {
+//   const message = response?.data?.message || ['操作失败，请稍后再试。'];
+//   const style = response?.data?.success ? 'success' : 'danger';
+//   const finalTitle = response?.data?.success ? `${title}成功` : `${title}失敗`;
+
+//   emitter.emit('push-message', {
+//     style,
+//     title: finalTitle,
+//     content: Array.isArray(message) ? message.join('、') : message,
+//   });
+
+//   if (response?.data?.success && successCallback) {
+//     successCallback(); // 执行成功响应时的回调函数
+//   }
+// }

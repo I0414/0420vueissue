@@ -92,16 +92,16 @@
                   <td>
                     <div class="input-group input-group-sm">
                       <label for="quantityInput"></label>
-                        <input
-                          type="number"
-                          id="quantityInput"
-                          class="form-control col-auto"
-                          min="1"
-                          :disabled="item.id === status.loadingItem"
-                          @change="updateCart(item)"
-                          v-model.number="item.qty"
-                        />
-                        <div class="input-group-text">/ {{ item.product.unit }}</div>
+                      <input
+                        type="number"
+                        id="quantityInput"
+                        class="form-control col-auto"
+                        min="1"
+                        :disabled="item.id === status.loadingItem"
+                        @change="updateCart(item)"
+                        v-model.number="item.qty"
+                      />
+                      <div class="input-group-text">/ {{ item.product.unit }}</div>
                     </div>
                   </td>
                   <td class="text-end">
@@ -157,8 +157,8 @@
             rules="email|required"
             v-model="form.user.email"
           ></FieldView>
-          <ErrorMessage name="email" class="invalid-feedback text-danger"
-            style="color: red">內容太少</ErrorMessage>
+          <ErrorMessage name="email" class="invalid-feedback"></ErrorMessage
+          >
         </div>
 
         <div class="mb-3">
@@ -185,7 +185,7 @@
             class="form-control"
             :class="{ 'is-invalid': errors['電話'] }"
             placeholder="請輸入電話"
-            rules="required"
+            :rules="isPhone"
             v-model="form.user.tel"
           ></FieldView>
           <ErrorMessage name="電話" class="invalid-feedback"></ErrorMessage>
@@ -258,7 +258,7 @@ export default {
       try {
         this.isLoading = true;
         const response = await api.get(url);
-        this.products = response.products;
+        this.products = response.data.products;
       } catch (error) {
         console.error('Error getting products:', error);
       } finally {
@@ -273,11 +273,13 @@ export default {
         const url = `api/${process.env.VUE_APP_PATH}/cart`;
         this.status.loadingItem = id;
         const cart = { product_id: id, qty: 1 };
-        await api.post(url, { data: cart });
+        const response = await api.post(url, { data: cart });
         this.status.loadingItem = '';
+        this.$httpMessageState(response, '加入購物車');
+        console.log(response);
         this.getCart();
       } catch (error) {
-        console.error('Error adding item to cart:', error);
+        console.log('Error adding item to cart:', error);
         this.status.loadingItem = '';
       }
     },
@@ -302,7 +304,8 @@ export default {
           product_id: item.product_id,
           qty: item.qty,
         };
-        await api.put(url, { data: cart });
+        const response = await api.put(url, { data: cart });
+        console.log(response);
         this.status.loadingItem = '';
         this.getCart();
       } catch (error) {
@@ -352,6 +355,10 @@ export default {
       } catch (error) {
         console.error('Error creating order:', error);
       }
+    },
+    isPhone(value) {
+      const phoneNumber = /^(09)[0-9]{8}$/;
+      return phoneNumber.test(value) ? true : '需要正確的電話號碼';
     },
   },
   created() {

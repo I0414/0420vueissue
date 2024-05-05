@@ -155,8 +155,7 @@
             rules="email|required"
             v-model="form.user.email"
           ></FieldView>
-          <ErrorMessage name="email" class="invalid-feedback text-danger"
-            style="color: red">內容太少</ErrorMessage>
+          <ErrorMessage name="email" class="invalid-feedback"></ErrorMessage>
         </div>
 
         <div class="mb-3">
@@ -263,6 +262,7 @@ export default {
       this.status.loadingItem = id;
       const cart = { product_id: id, qty: 1 };
       this.$http.post(url, { data: cart }).then((res) => {
+        this.$httpMessageState(res, '加入購物車');
         this.status.loadingItem = '';
         console.log(res);
         this.getCart();
@@ -286,6 +286,7 @@ export default {
         qty: item.qty,
       };
       this.$http.put(url, { data: cart }).then((res) => {
+        this.$httpMessageState(res, '更新購物車資訊');
         console.log(res);
         this.status.loadingItem = '';
         this.getCart();
